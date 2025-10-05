@@ -1,0 +1,85 @@
+// Paquete en minúsculas representando la capa de acceso a datos
+package com.proyecto.dao;
+
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
+// Clase en PascalCase que maneja operaciones sobre la entidad Cliente
+public class ClienteDAO {
+
+    // Parámetros de conexión a base de datos
+    private static final String URL = "jdbc:mysql://localhost:3306/mi_base_datos";
+    private static final String USER = "usuario";
+    private static final String PASSWORD = "contrasena";
+
+    // Método para obtener conexión
+    private Connection obtenerConexion() throws SQLException {
+        return DriverManager.getConnection(URL, USER, PASSWORD);
+    }
+
+    // Método para insertar un cliente - nombre del método en camelCase
+    public boolean insertarCliente(Cliente cliente) {
+        String sql = "INSERT INTO clientes (nombre, email) VALUES (?, ?)";
+        try (Connection conn = obtenerConexion();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, cliente.getNombre());
+            stmt.setString(2, cliente.getEmail());
+            int filas = stmt.executeUpdate();
+            return filas > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // Método para consultar todos los clientes
+    public List<Cliente> listarClientes() {
+        List<Cliente> lista = new ArrayList<>();
+        String sql = "SELECT id, nombre, email FROM clientes";
+        try (Connection conn = obtenerConexion();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                Cliente cliente = new Cliente();
+                cliente.setId(rs.getInt("id"));
+                cliente.setNombre(rs.getString("nombre"));
+                cliente.setEmail(rs.getString("email"));
+                lista.add(cliente);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return lista;
+    }
+
+    // Método para actualizar datos de un cliente
+    public boolean actualizarCliente(Cliente cliente) {
+        String sql = "UPDATE clientes SET nombre = ?, email = ? WHERE id = ?";
+        try (Connection conn = obtenerConexion();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, cliente.getNombre());
+            stmt.setString(2, cliente.getEmail());
+            stmt.setInt(3, cliente.getId());
+            int filas = stmt.executeUpdate();
+            return filas > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // Método para eliminar un cliente por id
+    public boolean eliminarCliente(int id) {
+        String sql = "DELETE FROM clientes WHERE id = ?";
+        try (Connection conn = obtenerConexion();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            int filas = stmt.executeUpdate();
+            return filas > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+}
